@@ -3,21 +3,26 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
+#include "parser.h"
 #include "patch.h"
+#include "point.h"
 
 class Parser {
 
 	std::vector<Patch> patches;
-	float subd
+	int patchNumber;
+	float subd;
 	bool adaptive;
 	bool uniform;
 public:
 	Parser() {
+		patchNumber = 0;
 		adaptive = uniform = false;
 	}
 
 	Parser(int argc, char *argv[]) {
 		parse(argc, argv);
+		patchNumber = 0;
 		adaptive = uniform = false;
 	}
 
@@ -49,7 +54,7 @@ public:
 		}
 
 		int i = 0;
-		int patchNumber =  ::atoi(array[0].c_str());
+		patchNumber =  ::atoi(array[0].c_str());
 		while (i < patchNumber) { //One patch per loop
 			Patch patch;
 			parseLine(inputfile, line, patch); //Curve 1
@@ -73,10 +78,10 @@ public:
 			values[i] = ::atof(array[i].c_str());
 		}
 
-		float point1[3] = {values[0], values[1], values[2]};
-		float point2[3] = {values[3], values[4], values[5]};
-		float point3[3] = {values[6], values[7], values[8]};
-		float point4[3] = {values[9], values[10], values[11]};
+		Point point1(values[0], values[1], values[2]);
+		Point point2(values[3], values[4], values[5]);
+		Point point3(values[6], values[7], values[8]);
+		Point point4(values[9], values[10], values[11]);
 
 		patch.addCurve(point1, point2, point3, point4);
 	}
@@ -86,5 +91,25 @@ public:
 		std::istringstream iss(line);
 		std::istream_iterator<std::string> begin(iss), end;
 		return std::vector<std::string> array(begin, end);
+	}
+
+	std::vector<Patch> getPatches() {
+		return patches;
+	}
+
+	int getPatchNumber() {
+		return patchNumber;
+	}
+
+	float getSubdivision() {
+		return subd;
+	}
+
+	bool isAdaptive() {
+		return adaptive;
+	}
+
+	bool isUniform() {
+		return uniform;
 	}
 };

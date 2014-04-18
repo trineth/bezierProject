@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include "patch.h"
+#include "parser.h"
+#include "point.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -88,6 +91,35 @@ void initScene(argc, argv){
 // function that does the actual drawing
 //***************************************************
 void myDisplay() {
+
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glColor3f(0.0f, 7.0f, 7.0f);
+
+  int patchNum = parser.getPatchNumber();
+  std::vector<Patch> patches = parser.getPatches();
+
+  lPointSize(5.0f);
+  glBegin(GL_POINTS);
+  for (int i = 0; i < patchNum, i++) {
+    Patch patch = patches[i];
+    Point points[16] = patch.getPoints();
+    for (int j = 0; j < 16; j += 4) {
+      float values[3] = points[j].getValues();
+      glVertex3f(values[0], values[1], values[2]);
+
+      float values[3] = points[j+3].getValues();
+      glVertex3f(values[0], values[1], values[2]);
+    }
+
+  }
+  glEnd();
+
+  glFlush();
+  glutSwapBuffers();
 }
 
 

@@ -1,6 +1,7 @@
-#ifndef ADD_H
-#define ADD_H
- 
+#ifndef PATCH_H
+#define PATCH_H
+
+#include "point.h"
 /**
 * patchPoints notes:
 * 	This is a 1D array containg the 3 dimensional point values of curves.
@@ -13,8 +14,8 @@ class Patch {
 public:
 	Patch();
 
-	addCurve(float *point1[3], float *point2[3], float *point3[3], float *point4[3]);
-
+	void addCurve(Point point1, Point point2, Point point3, Point point4);
+	Point* getPoints();
 
 };
 

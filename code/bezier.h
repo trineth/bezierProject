@@ -1,5 +1,5 @@
-#ifndef ADD_H
-#define ADD_H
+#ifndef BEZIER_H
+#define BEZIER_H
  
 
 
