@@ -6,6 +6,7 @@
 #include "patch.h"
 #include "parser.h"
 #include "point.h"
+#include "bezier.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,6 +34,9 @@ static struct timeval lastTime;
 #define PI 3.14159265
 float posX = 0.0f;
 float posY = 0.0f;
+float posZ = 0.0f;
+float fov = 0;
+float angle = 0;
 
 
 using namespace std;
@@ -79,7 +83,7 @@ void myReshape(int w, int h) {
 //****************************************************
 // sets the window up
 //****************************************************
-void initScene(argc, argv){
+void initScene(int argc, char *argv[]) {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
 
   myReshape(viewport.w,viewport.h);
@@ -94,29 +98,38 @@ void myDisplay() {
 
   glClear(GL_COLOR_BUFFER_BIT);
 
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(fov, 1.0, 0.1, 100.0);
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-
-  glColor3f(0.0f, 7.0f, 7.0f);
+  gluLookAt(posX, posY, posZ, 0, 0, 0, 0, 1, 0);
+  glRotatef(angle, 0, 1, 0);
+  glColor3f(0.0f, 0.7f, 0.7f);
 
   int patchNum = parser.getPatchNumber();
   std::vector<Patch> patches = parser.getPatches();
 
-  lPointSize(5.0f);
-  glBegin(GL_POINTS);
-  for (int i = 0; i < patchNum, i++) {
+  glPointSize(6.0f);
+  glBegin(GL_LINES);
+  Point* points;
+  float* values;
+  for (int i = 0; i < patchNum; i++) {
     Patch patch = patches[i];
-    Point points[16] = patch.getPoints();
-    for (int j = 0; j < 16; j += 4) {
-      float values[3] = points[j].getValues();
+    points = patch.getPoints();
+    for (int j = 0; j < 16; j++) {
+      values = points[j].getValues();
       glVertex3f(values[0], values[1], values[2]);
 
-      float values[3] = points[j+3].getValues();
-      glVertex3f(values[0], values[1], values[2]);
+      // values = points[j+3].getValues();
+      // cout << values[0] << " " << values[1] << " " << values[2] << "\n";
+      // glVertex3f(values[0], values[1], values[2]);
     }
 
   }
   glEnd();
+
 
   glFlush();
   glutSwapBuffers();
@@ -135,6 +148,28 @@ void myFrameMove() {
 }
 
 void processSpecialKeys(int key, int x, int y) {
+  switch(key) {
+    case GLUT_KEY_UP :
+      posY += 0.01f; break;
+    case GLUT_KEY_DOWN :
+      posY -= 0.01f; break;
+    case GLUT_KEY_LEFT :
+      posX -= 0.01f; break;
+    case GLUT_KEY_RIGHT :
+      posX += 0.01f; break;
+    case GLUT_KEY_PAGE_UP :
+      posZ += 1.0f; break;
+    case GLUT_KEY_PAGE_DOWN :
+      posZ -= 1.0f; break;
+    case GLUT_KEY_F11 :
+      fov += 1.0f; break;
+    case GLUT_KEY_F12 :
+      fov -= 1.0f; break;
+    case GLUT_KEY_F1 :
+      angle += 1.0f; break;
+    case GLUT_KEY_F2 :
+      angle -= 1.0f; break;
+  }
 }
 
 //****************************************************
@@ -148,8 +183,8 @@ int main(int argc, char *argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Initalize theviewport size
-  viewport.w = 400;
-  viewport.h = 400;
+  viewport.w = 800;
+  viewport.h = 800;
 
   //The size and position of the window
   glutInitWindowSize(viewport.w, viewport.h);

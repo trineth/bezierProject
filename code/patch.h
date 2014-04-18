@@ -10,12 +10,14 @@
 *	Each subset of three values are the x, y, and z values of the respective point.
 */
 class Patch {
-	float patchPoints[48]; // 3 points per vertex.  4 vertices per curve. 4 curves.
+	int i;
+	Point patchPoints[16]; // 3 points per vertex.  4 vertices per curve. 4 curves.
 public:
 	Patch();
 
 	void addCurve(Point point1, Point point2, Point point3, Point point4);
 	Point* getPoints();
+	Point* getCurve(int curveNum, bool isHorizontal);
 
 };
 

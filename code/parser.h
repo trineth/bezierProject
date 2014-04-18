@@ -4,6 +4,11 @@
 #include "patch.h"
 
 class Parser {
+	std::vector<Patch> patches;
+	int patchNumber;
+	float subd;
+	bool adaptive;
+	bool uniform;
 public:
 	Parser();
 	Parser(int argc, char *argv[]);

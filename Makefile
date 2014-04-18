@@ -6,16 +6,31 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
     	-lGL -lGLU -lm -lstdc++
 else
 	CFLAGS = -g -DGL_GLEXT_PROTOTYPES -Icode/glut-3.7.6-bin
-	LDFLAGS = -lglut -lGL
+	LDFLAGS = -lglut -lGL -lGLU
 endif
 	
 RM = /bin/rm -f 
-all: main 
-main: code/bezier.o 
-	$(CC) $(CFLAGS) -o bezier code/bezier.o $(LDFLAGS) 
-code/bezier.o: code/bezier.cpp
-	$(CC) $(CFLAGS) -c code/bezier.cpp -o code/bezier
+all: main
+main: code/main.o code/parser.o code/patch.o code/point.o code/bezier.o
+	$(CC) $(CFLAGS) -o main code/point.o code/patch.o \
+	code/parser.o code/bezier.o code/main.o $(LDFLAGS)
+
+code/main.o: code/main.cpp code/patch.cpp code/point.cpp code/parser.cpp code/bezier.cpp
+	$(CC) $(CFLAGS) -c code/main.cpp -o code/main.o
+
+code/parser.o: code/parser.cpp code/patch.cpp code/point.cpp
+	$(CC) $(CFLAGS) -c code/parser.cpp -o code/parser.o
+
+code/bezier.o:  code/bezier.cpp code/patch.cpp code/point.cpp
+	$(CC) $(CFLAGS) -c code/bezier.cpp -o code/bezier.o
+
+code/patch.o: code/patch.cpp code/point.cpp
+	$(CC) $(CFLAGS) -c code/patch.cpp -o code/patch.o
+
+code/point.o: code/point.cpp
+	$(CC) $(CFLAGS) -c code/point.cpp -o code/point.o
+
 clean: 
-	$(RM) *.o code/*.o bezier
+	$(RM) *.o code/*.o main
  
 
