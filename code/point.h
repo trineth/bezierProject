@@ -3,7 +3,7 @@
  
 class Point {
 	float values[3];
-	Point normal;
+	float normal[3];
 public:
 	Point() {}
 	Point(float xx, float yy, float zz);
@@ -11,7 +11,7 @@ public:
 	Point(float point[]);
 
 	void saveNormal(Point n);
-	Point normal();
+	float* getNormal();
 	float* getValues();
 	float length();
 

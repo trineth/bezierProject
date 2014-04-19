@@ -4,7 +4,8 @@
 #include <cmath>
 #include <stdlib.h>
 
-
+#include "patch.h"
+#include "point.h"
 /**
 * patchPoints notes:
 * 	This is a 1D array containg the 3 dimensional point values of curves.

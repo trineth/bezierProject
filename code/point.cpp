@@ -22,10 +22,13 @@
 	}
 
 	void Point::saveNormal(Point n) {
-		normal = n;
+		float* norm = n.getValues();
+		normal[0] = norm[0];
+		normal[1] = norm[1];
+		normal[2] = norm[2];
 	}
 
-	Point Point::normal() {
+	float* Point::getNormal() {
 		return normal;
 	}
 
@@ -60,7 +63,9 @@
  		this->values[0] = rhs.values[0];
   		this->values[1] = rhs.values[1];
   		this->values[2] = rhs.values[2];
-  		this->normal = rhs.normal;
+ 		this->normal[0] = rhs.normal[0];
+  		this->normal[1] = rhs.normal[1];
+  		this->normal[2] = rhs.normal[2];
   		return *this;
  	}
 

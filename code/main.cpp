@@ -39,6 +39,8 @@ float posZ = 0.0f;
 float fov = 0;
 float angle = 0;
 
+std::vector<Quad> rquads;
+
 
 using namespace std;
 
@@ -90,30 +92,38 @@ void initScene(int argc, char *argv[]) {
   myReshape(viewport.w,viewport.h);
   parser.parse(argc, argv);
 
-  Point* points;
-  float* values;
+  int patchNum = parser.getPatchNumber();
+  std::vector<Patch> patches = parser.getPatches();
+  float subd = parser.getSubdivision();
+
   for (int i = 0; i < patchNum; i++) {
     Patch patch = patches[i];
-    subdividepatch(patch, subd);
+    Bezier bez;
+    bez.subdividepatch(patch, subd);
+    int quadNum = bez.getQuadNum();
+    for (int j = 0; j < quadNum; j++) {
+      rquads.push_back(bez.getQuad(j));
+    }
   }
 }
 
-void renderQuadAsTriangles(Point *points[]) {
+void renderQuadAsTriangles(Point points[]) {
+    float* values;
     glBegin(GL_TRIANGLES);
-    values = points[0].getvalues();
+    values = points[0].getValues();
     glVertex3f(values[0], values[1], values[2]);
-    values = points[1].getvalues();
+    values = points[1].getValues();
     glVertex3f(values[0], values[1], values[2]);
-    values = points[2].getvalues();
+    values = points[2].getValues();
     glVertex3f(values[0], values[1], values[2]);
     glEnd();
 
     glBegin(GL_TRIANGLES);
-    values = points[2].getvalues();
+    values = points[2].getValues();
     glVertex3f(values[0], values[1], values[2]);
-    values = points[3].getvalues();
+    values = points[3].getValues();
     glVertex3f(values[0], values[1], values[2]);
-    values = points[0].getvalues();
+    values = points[0].getValues();
     glVertex3f(values[0], values[1], values[2]);
     glEnd();
 }
@@ -135,11 +145,6 @@ void myDisplay() {
   glRotatef(angle, 0, 1, 0);
   glColor3f(0.5f, 0.5f, 0.5f);
 
-  int patchNum = parser.getPatchNumber();
-  std::vector<Patch> patches = parser.getPatches();
-  float subd = parser.getSubdivision();
-
-
   // //Rendering just the points
   // glPointSize(6.0f);
   // glBegin(GL_LINES);
@@ -159,9 +164,8 @@ void myDisplay() {
 
   //uniform tesselation
   glPointSize(3.0f);
-    for (int j = 0; j < bezQuads.size(); j++) {
-      points = bezQuads[j];
-      renderQuadAsTriangles(points);
+  for (int i = 0; i < rquads.size(); i++) {
+    renderQuadAsTriangles(rquads[i].getPoints());
   }
 
   glFlush();

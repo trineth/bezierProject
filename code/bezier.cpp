@@ -3,19 +3,16 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 #include "bezier.h"
 #include "patch.h"
 #include "point.h"
 #include "quad.h"
 
-std::vector<Point> bezPoints;
-std::vector<Quad> bezQuads;
-
 // given the control points of a bezier curve
 // and a parametric value, return the curve 
 // point and derivative
-Point bezcurveinterp(Point curve[], float u, Point &dPdu) {
+Point Bezier::bezcurveinterp(Point curve[], float u, Point &dPdu) {
 	// first, split each of the three segments
 	// to form two new ones AB and BC
 	Point A = curve[0] * (1.0-u) + curve[1] * u;
@@ -34,7 +31,7 @@ Point bezcurveinterp(Point curve[], float u, Point &dPdu) {
 
 // given a control patch and (u,v) values, find 
 // the surface point and normal
-Point bezpatchinterp(Patch patch, float u, float v, Point &n) {
+Point Bezier::bezpatchinterp(Patch patch, float u, float v, Point &n) {
 	Point p;
 	Point dPdu;
 	Point dPdv;
@@ -66,7 +63,7 @@ Point bezpatchinterp(Patch patch, float u, float v, Point &n) {
 }
 
 // given a patch, perform uniform subdivision
-void subdividepatch(Patch patch, float step) {
+void Bezier::subdividepatch(Patch patch, float step) {
 	// compute how many subdivisions there 
 	// are for this step size
 	int epsilon = 0;
@@ -92,25 +89,25 @@ void subdividepatch(Patch patch, float step) {
 }
 
 //  Returns cross product between two 3D vectors
-Point cross(Point a, Point b) {
+Point Bezier::cross(Point a, Point b) {
 	float* valueA = a.getValues();
 	float* valuaB = b.getValues();
-	Vector3f vecA(valueA[0], valueA[1], valueA[2]);
-	Vector3f vecB(valueB[0], valueB[1], valueB[2]);
-	Vector3f result = vecA.cross(vec2);
+	Eigen::Vector3f vecA(valueA[0], valueA[1], valueA[2]);
+	Eigen::Vector3f vecB(valueB[0], valueB[1], valueB[2]);
+	Eigen::Vector3f result = vecA.cross(vec2);
 	Point point(result.[0], result[1], result[2]);
 	return point;
 }
 
-void savesurfacepointandnormal(Point p, float iu, float iv, int numdiv) {
+void Bezier::savesurfacepointandnormal(Point p, float iu, float iv, int numdiv) {
 	bezPoints[position] = p;
 }
 
-void constructQuads(float numdiv) {
-	int u = 0;
+void Bezier::constructQuads(float numdiv) {
 	int v = 0;
 	int position;
 	while (v < numdiv-1) {
+		int u = 0;
 		while (u < numdiv-1) {
 			pos1 = v*numdiv + u;
 			pos2 = v*numdiv + u+1;

@@ -11,9 +11,9 @@ endif
 	
 RM = /bin/rm -f 
 all: main
-main: code/main.o code/parser.o code/patch.o code/point.o code/bezier.o
+main: code/main.o code/parser.o code/patch.o code/point.o code/bezier.o code/quad.o
 	$(CC) $(CFLAGS) -o main code/point.o code/patch.o \
-	code/parser.o code/bezier.o code/main.o $(LDFLAGS)
+	code/parser.o code/bezier.o code/quad.o code/main.o $(LDFLAGS)
 
 code/main.o: code/main.cpp code/patch.cpp code/point.cpp code/parser.cpp code/bezier.cpp
 	$(CC) $(CFLAGS) -c code/main.cpp -o code/main.o
@@ -29,6 +29,9 @@ code/patch.o: code/patch.cpp code/point.cpp
 
 code/point.o: code/point.cpp
 	$(CC) $(CFLAGS) -c code/point.cpp -o code/point.o
+
+code/quad.o: code/quad.cpp code/point.cpp
+	$(CC) $(CFLAGS) -c code/quad.cpp -o code/quad.o
 
 clean: 
 	$(RM) *.o code/*.o main
