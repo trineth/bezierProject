@@ -9,7 +9,7 @@ class Bezier{
 	std::vector<Point> bezPoints;
 	std::vector<Quad> bezQuads;
 public:
-	Bezier() {};
+	Bezier() {}
 
 	Point bezcurveinterp(Point *curve[], float u, Point &dPdu);
 	Point bezpatchinterp(Patch patch, float u, float v, Point &n);

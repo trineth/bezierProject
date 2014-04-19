@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include "bezier.h"
 #include "patch.h"
 #include "point.h"
