@@ -19,7 +19,7 @@
 
 	Quad::Quad(Point one, Point two, Point three, Point four) {
 		subdivided = false;
-		pointStored = 4;
+		pointsStored = 4;
 		points[0] = one;
 		points[1] = two;
 		points[2] = three;
