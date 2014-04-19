@@ -15,7 +15,7 @@ main: code/main.o code/parser.o code/patch.o code/point.o code/bezier.o code/qua
 	$(CC) $(CFLAGS) -o main code/point.o code/patch.o \
 	code/parser.o code/bezier.o code/quad.o code/main.o $(LDFLAGS)
 
-code/main.o: code/main.cpp code/patch.cpp code/point.cpp code/parser.cpp code/bezier.cpp
+code/main.o: code/main.cpp code/patch.cpp code/point.cpp code/parser.cpp code/bezier.cpp code/quad.cpp
 	$(CC) $(CFLAGS) -c code/main.cpp -o code/main.o
 
 code/parser.o: code/parser.cpp code/patch.cpp code/point.cpp
