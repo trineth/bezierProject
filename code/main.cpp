@@ -89,6 +89,13 @@ void initScene(int argc, char *argv[]) {
 
   myReshape(viewport.w,viewport.h);
   parser.parse(argc, argv);
+
+  Point* points;
+  float* values;
+  for (int i = 0; i < patchNum; i++) {
+    Patch patch = patches[i];
+    subdividepatch(patch, subd);
+  }
 }
 
 void renderQuadAsTriangles(Point *points[]) {
@@ -152,15 +159,9 @@ void myDisplay() {
 
   //uniform tesselation
   glPointSize(3.0f);
-  Point* points;
-  float* values;
-  for (int i = 0; i < patchNum; i++) {
-    Patch patch = patches[i];
-    subdividepatch(patch, subd);
     for (int j = 0; j < bezQuads.size(); j++) {
       points = bezQuads[j];
       renderQuadAsTriangles(points);
-    }
   }
 
   glFlush();

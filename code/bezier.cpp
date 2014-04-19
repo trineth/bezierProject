@@ -103,7 +103,6 @@ Point cross(Point a, Point b) {
 }
 
 void savesurfacepointandnormal(Point p, float iu, float iv, int numdiv) {
-	int position = iu*numdiv + iv;
 	bezPoints[position] = p;
 }
 
