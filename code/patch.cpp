@@ -3,8 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
-#include "patch.h"
-#include "point.h"
+
 
 /**
 * patchPoints notes:

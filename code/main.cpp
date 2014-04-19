@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "point.h"
 #include "bezier.h"
+#include "quad.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -90,6 +91,25 @@ void initScene(int argc, char *argv[]) {
   parser.parse(argc, argv);
 }
 
+void renderQuadAsTriangles(Point *points[]) {
+    glBegin(GL_TRIANGLES);
+    values = points[0].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    values = points[1].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    values = points[2].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    glEnd();
+
+    glBegin(GL_TRIANGLES);
+    values = points[2].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    values = points[3].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    values = points[0].getvalues();
+    glVertex3f(values[0], values[1], values[2]);
+    glEnd();
+}
 
 //***************************************************
 // function that does the actual drawing
@@ -106,36 +126,46 @@ void myDisplay() {
   glLoadIdentity();
   gluLookAt(posX, posY, posZ, 0, 0, 0, 0, 1, 0);
   glRotatef(angle, 0, 1, 0);
-  glColor3f(0.0f, 0.7f, 0.7f);
+  glColor3f(0.5f, 0.5f, 0.5f);
 
   int patchNum = parser.getPatchNumber();
   std::vector<Patch> patches = parser.getPatches();
+  float subd = parser.getSubdivision();
 
-  glPointSize(6.0f);
-  glBegin(GL_LINES);
+
+  // //Rendering just the points
+  // glPointSize(6.0f);
+  // glBegin(GL_LINES);
+  // Point* points;
+  // float* values;
+  // for (int i = 0; i < patchNum; i++) {
+  //   Patch patch = patches[i];
+  //   points = patch.getPoints();
+  //   for (int j = 0; j < 16; j++) {
+  //     values = points[j].getValues();
+  //     glVertex3f(values[0], values[1], values[2]);
+  //   }
+
+  // }
+  // glEnd();
+
+
+  //uniform tesselation
+  glPointSize(3.0f);
   Point* points;
   float* values;
   for (int i = 0; i < patchNum; i++) {
     Patch patch = patches[i];
-    points = patch.getPoints();
-    for (int j = 0; j < 16; j++) {
-      values = points[j].getValues();
-      glVertex3f(values[0], values[1], values[2]);
-
-      // values = points[j+3].getValues();
-      // cout << values[0] << " " << values[1] << " " << values[2] << "\n";
-      // glVertex3f(values[0], values[1], values[2]);
+    subdividepatch(patch, subd);
+    for (int j = 0; j < bezQuads.size(); j++) {
+      points = bezQuads[j];
+      renderQuadAsTriangles(points);
     }
-
   }
-  glEnd();
-
 
   glFlush();
   glutSwapBuffers();
 }
-
-
 //****************************************************
 // called by glut when there are no messages to handle
 //****************************************************

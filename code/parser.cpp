@@ -29,13 +29,17 @@
 
 	void Parser::parse(int argc, char *argv[]) {
 
-		if (argc > 3) { // at least 3 arguments
+		if (argc > 2) { // at least 2 arguments
 			parseFile(argv[1]);
 			subd = ::atof(argv[2]);
-			std::string str = std::string(argv[3]);
-			if (str.compare("-a") != 0) { // if the argument is -a
-				adaptive = true;
-			} else if (str.compare("-u") != 0) { // if the argument is -u
+			if (argc > 3) {
+				std::string str = std::string(argv[3]);
+				if (str.compare("-a") != 0) { // at least 3 arguments&if the argument is -a 
+					adaptive = true;
+				} else { // if the argument is -u
+					uniform = true;
+				}
+			} else {
 				uniform = true;
 			}
 		} else {

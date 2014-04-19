@@ -6,9 +6,8 @@
 #include "point.h"
 
 // class Point {
-// 	float x;
-// 	float y;
-// 	float z;
+// 	float values[3];
+//	Point normal;
 // public:
 	Point::Point(float xx, float yy, float zz) {
 		values[0] = xx;
@@ -22,8 +21,22 @@
 		values[2] = point[2];
 	}
 
+	void Point::saveNormal(Point n) {
+		normal = n;
+	}
+
+	Point Point::normal() {
+		return normal;
+	}
+
 	float* Point::getValues() {
 		return values;
+	}
+
+	float Point::length() {
+		float sum = std::pow(values[0], 2) + std::pow(values[1], 2) + std::pow(values[2], 2);
+		float mag = std::sqrt(sum);
+		return mag;
 	}
 
 	Point& Point::operator+=(const Point& rhs) {
@@ -47,6 +60,7 @@
  		this->values[0] = rhs.values[0];
   		this->values[1] = rhs.values[1];
   		this->values[2] = rhs.values[2];
+  		this->normal = rhs.normal;
   		return *this;
  	}
 

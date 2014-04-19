@@ -3,9 +3,14 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
+#include <Eigen/Dense>
 #include "bezier.h"
 #include "patch.h"
 #include "point.h"
+#include "quad.h"
+
+std::vector<Point> bezPoints;
+std::vector<Quad> bezQuads;
 
 // given the control points of a bezier curve
 // and a parametric value, return the curve 
@@ -55,25 +60,67 @@ Point bezpatchinterp(Patch patch, float u, float v, Point &n) {
 	p = bezcurveinterp(ucurve, u, dPdu);
 	// take cross product of partials to find normal
 	n = cross(dPdu, dPdv);
-	n = n / length(n);
+	n = n / n.length();
+	p.saveNormal(n);
 	return p;
 }
 
-// // given a patch, perform uniform subdivision
-// void subdividepatch(Patch patch, float step) {
-// 	// compute how many subdivisions there 
-// 	// are for this step size
-// 	numdiv = ((1 + epsilon)/ step);
-// 	// for each parametric value of u
-// 	for (iu = 0 to numdiv);
-// 	u = iu * step;
-// 	// for each parametric value of v
-// 	for (iv = 0 to numdiv);
-// 	v = iv * step;
-// 	// evaluate surface
-// 	Point n;
-// 	p = bezpatchinterp(patch, u, v, n);
-// 	savesurfacepointandnormal(p,n);
-// }
+// given a patch, perform uniform subdivision
+void subdividepatch(Patch patch, float step) {
+	// compute how many subdivisions there 
+	// are for this step size
+	int epsilon = 0;
+	int numdiv = ((1 + epsilon)/ step);
+	float u, v;
+	Point p, n;
 
-// };
+	bezPoints.clear();
+	bezPoints.resize(numdiv*numdiv);
+
+	// for each parametric value of u
+	for (int iu = 0; iu < numdiv; iu++) {
+		u = iu * step;
+		// for each parametric value of v
+		for (int iv = 0; iv < numdiv; iv++) {
+			v = iv * step;
+			// evaluate surface
+			p = bezpatchinterp(patch, u, v, n);
+			savesurfacepointandnormal(p,iu,iv,numdiv);
+		}
+	}
+	constructQuads(numdiv);
+}
+
+//  Returns cross product between two 3D vectors
+Point cross(Point a, Point b) {
+	float* valueA = a.getValues();
+	float* valuaB = b.getValues();
+	Vector3f vecA(valueA[0], valueA[1], valueA[2]);
+	Vector3f vecB(valueB[0], valueB[1], valueB[2]);
+	Vector3f result = vecA.cross(vec2);
+	Point point(result.[0], result[1], result[2]);
+	return point;
+}
+
+void savesurfacepointandnormal(Point p, float iu, float iv, int numdiv) {
+	int position = iu*numdiv + iv;
+	bezPoints[position] = p;
+}
+
+void constructQuads(float numdiv) {
+	int u = 0;
+	int v = 0;
+	int position;
+	while (v < numdiv-1) {
+		while (u < numdiv-1) {
+			pos1 = v*numdiv + u;
+			pos2 = v*numdiv + u+1;
+			pos3 = (v+1)*numdiv + u+1;
+			pos4 = (v+1)*numdiv + u;  //Points stored clockwise position
+			Quad quad(bezPoints[pos1],bezPoints[pos2],bezPoints[pos3],bezPoints[pos4]);
+			bezQuads.push_back(quad);
+			u++;
+		}
+		v++;
+	}
+}
