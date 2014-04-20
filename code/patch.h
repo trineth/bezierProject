@@ -17,7 +17,9 @@ public:
 
 	void addCurve(Point point1, Point point2, Point point3, Point point4);
 	Point* getPoints();
+	std::vector<Point> getEndPoints();
 	std::vector<Point> getCurve(int curveNum, bool isHorizontal);
+
 
 };
 

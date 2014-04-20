@@ -8,6 +8,7 @@
 #include "point.h"
 #include "bezier.h"
 #include "quad.h"
+#include "triangle.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -40,6 +41,7 @@ float fov = 1.0f;
 float angle = 90;
 
 std::vector<Quad> rquads;
+std::vector<Triangle> rtriangles;
 
 bool wire = false;
 bool adaptive = false;
@@ -98,6 +100,12 @@ void initScene(int argc, char *argv[]) {
   std::vector<Patch> patches = parser.getPatches();
   float subd = parser.getSubdivision();
 
+
+  if (parser.isAdaptive()) {
+    std::cout<< "adaptive\n";
+    adaptive = true;
+  }
+
   if (!adaptive) {
     for (int i = 0; i < patchNum; i++) {
       Patch patch = patches[i];
@@ -108,6 +116,12 @@ void initScene(int argc, char *argv[]) {
         Quad quad = bez.getQuad(j);
         rquads.push_back(quad);
       }
+    }
+  } else {
+    for (int i = 0; i < patchNum; i++) {
+      Patch patch = patches[i];
+      Bezier bez;
+      bez.adaptiveExecute(patch, subd);
     }
   }
 }
@@ -195,8 +209,8 @@ void myDisplay() {
 
   glFlush();
   glutSwapBuffers();
-  std::cout << "Pos X, Y, Z:" << posX << " " << posY << " " << posZ << "\n";
-  std::cout << "fov, angle:" << fov << " " << angle << " " << "\n";
+  //std::cout << "Pos X, Y, Z:" << posX << " " << posY << " " << posZ << "\n";
+  //std::cout << "fov, angle:" << fov << " " << angle << " " << "\n";
 }
 //****************************************************
 // called by glut when there are no messages to handle

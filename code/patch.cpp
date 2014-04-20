@@ -40,6 +40,13 @@
 		return patchPoints;
 	}
 
+	std::vector<Point> Patch::getEndPoints() {
+		Point pointsArray[4] = {patchPoints[0], patchPoints[3],
+			patchPoints[12],patchPoints[15]};
+		std::vector<Point> points(pointsArray, pointsArray+4);
+		return points;
+	}
+
 	std::vector<Point> Patch::getCurve(int curveNum, bool isHorizontal) {
 		std::vector<Point> curve(4);
 		if (isHorizontal) {
