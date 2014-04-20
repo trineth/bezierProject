@@ -51,12 +51,12 @@
 		Eigen::Vector3f n2(normal2[0], normal2[1],normal2[2]);
 		float angle1 = n1.dot(dir);
 		float angle2 = n2.dot(dir);
-		if (angle1 > angle2) {
-			return normal;
-		} else {
-			return normal2;
-		}
-		// return normal;
+		// if (angle1 > angle2) {
+		// 	return normal;
+		// } else {
+		// 	return normal2;
+		// }
+		return normal;
 	}
 
 	float* Point::getValues() {

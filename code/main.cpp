@@ -39,10 +39,12 @@ float posY = -384.0f;
 float posZ = -2.0f;
 float fov = 1.0f;
 float angle = 90;
+float flatBound = 0.05;
 
 std::vector<Quad> rquads;
 std::vector<Triangle> rtriangles;
 
+bool flat = false;
 bool wire = false;
 bool adaptive = false;
 
@@ -102,7 +104,6 @@ void initScene(int argc, char *argv[]) {
 
 
   if (parser.isAdaptive()) {
-    std::cout<< "adaptive\n";
     adaptive = true;
   }
 
@@ -121,7 +122,13 @@ void initScene(int argc, char *argv[]) {
     for (int i = 0; i < patchNum; i++) {
       Patch patch = patches[i];
       Bezier bez;
+      bez.setFlatBound(flatBound);
       bez.adaptiveExecute(patch, subd);
+      int triangleNum = bez.getTriangleNum();
+      for (int j = 0; j < triangleNum; j++) {
+        Triangle triangle = bez.getTriangle(j);
+        rtriangles.push_back(triangle);
+      }
     }
   }
 }
@@ -149,6 +156,14 @@ void renderQuadAsTriangles(Point points[]) {
     glEnd();
 }
 
+void renderTriangle(Point points[]) {
+    glBegin(GL_TRIANGLES);
+    renderVertex(points, 0);
+    renderVertex(points, 2);
+    renderVertex(points, 1);
+    glEnd();
+}
+
 //***************************************************
 // function that does the actual drawing
 //***************************************************
@@ -164,6 +179,12 @@ void myDisplay() {
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
   }
 
+  if (flat) {
+    glShadeModel(GL_FLAT);
+  } else {
+    glShadeModel(GL_SMOOTH);
+  }
+  
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -205,6 +226,11 @@ void myDisplay() {
     for (int i = 0; i < rquads.size(); i++) {
       renderQuadAsTriangles(rquads[i].getPoints());
     }
+  } else {
+    for (int i = 0; i < rtriangles.size(); i++) {
+      renderTriangle(rtriangles[i].getPoints());
+    }
+    std::cout << "rendering\n";
   }
 
   glFlush();
@@ -225,8 +251,10 @@ void myFrameMove() {
 
 void processKeys(unsigned char key, int x, int y) {
   switch(key) {
-    case 115: // s
+    case 119: // w
       wire = !wire; break;
+    case 115: // s
+      flat = !flat; break;
     case 43: // +
       angle += 1.0f; break;
     case 45: // -

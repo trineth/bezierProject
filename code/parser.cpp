@@ -34,7 +34,7 @@
 			subd = ::atof(argv[2]);
 			if (argc > 3) {
 				std::string str = std::string(argv[3]);
-				if (str.compare("-a") != 0) { // at least 3 arguments&if the argument is -a 
+				if (str.compare("-a") == 0) { // at least 3 arguments&if the argument is -a 
 					adaptive = true;
 				} else { // if the argument is -u
 					uniform = true;

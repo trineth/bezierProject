@@ -17,6 +17,7 @@ Bezier::Bezier() {
 	std::vector<Triangle> bezTriangles(5);
 	quadNum = 0;
 	triangleNum = 0;
+	flatBound = 0;
 }
 
 // given the control points of a bezier curve
@@ -184,21 +185,24 @@ void Bezier::printQuad() {
 void Bezier::adaptiveExecute(Patch patch, float step) {
 	Ptriangle triangle1;
 	triangle1.addPoint(0,0);
+	triangle1.addPoint(0,1);
 	triangle1.addPoint(1,1);
-	triangle1.addPoint(1,0);
 	Ptriangle triangle2;
 	triangle2.addPoint(0,0);
-	triangle2.addPoint(0,1);
 	triangle2.addPoint(1,1);
+	triangle2.addPoint(1,0);
 	bezTriangles.clear();
 	triangleNum = 0;
-	if (step >= 1) {
-		//render as is:
-		//split into two triangles, add them to triangle list
-		bezTriangles.reserve(2);
-		constructTriangle(patch, triangle1);
-		constructTriangle(patch, triangle2);
-	} else if (isFlat(patch)) {
+	// if (step >= 1) {
+	// 	//std::cout << "adapExec a\n";
+	// 	//render as is:
+	// 	//split into two triangles, add them to triangle list
+	// 	bezTriangles.reserve(2);
+	// 	constructTriangle(patch, triangle1);
+	// 	constructTriangle(patch, triangle2);
+	// } else
+	if (isFlat(patch)) {
+		//std::cout << "adapExec b\n";
 		//render as flat
 		/* code */
 		//split into two triangles, add them to triangle list
@@ -206,6 +210,7 @@ void Bezier::adaptiveExecute(Patch patch, float step) {
 		constructTriangle(patch, triangle1);
 		constructTriangle(patch, triangle2);
 	} else {
+		//std::cout << "adapExec c\n";
 		//subdivide in half.  Break into triangles, call adaptiveSubdivide(), incr step
 		//Triangle 1 has points at (u,v): (0,0) (1,1) (1,0)
 		//Triangle 2 has points at (u,v): (0,0) (0,1) (1,1)
@@ -218,14 +223,14 @@ void Bezier::adaptiveExecute(Patch patch, float step) {
 
 // Evaluates t at its endpoints, subdivides if necessary according to info from patch.
 void Bezier::adaptiveSubdivide(Patch patch, int itrLeft, Ptriangle t) {
-	if (itrLeft == 0) {
-		//render as is
-		constructTriangle(patch, t);
-		return;
-	}
+	// if (itrLeft == 0) {
+	// 	//render as is
+	// 	constructTriangle(patch, t);
+	// 	return;
+	// }
 
 	bool flatSides[3] = {false, false, false}; //true if flat, false if not.
-	int numFlat = 0;
+	int numFlat = 0; 
 	//subdivide more and call adaptiveSubdivide()
 	//for each edge
 	for (int i = 0; i < 3; i++) {
@@ -235,22 +240,21 @@ void Bezier::adaptiveSubdivide(Patch patch, int itrLeft, Ptriangle t) {
 			numFlat++;
 		}
 	}
-
 	if (numFlat == 0) {
 		zeroSideFlat(patch, itrLeft, t);
 	} else if (numFlat == 1) {
 
 		for (int i = 0; i < 3; i++) {
-			if (!flatSides[i]) {
+			if (flatSides[i]) {
 				oneSideFlat(patch, itrLeft, t, i);
 			}
 		}
 
 	} else if (numFlat == 2) {
 
-		if (!flatSides[0] && !flatSides[1]) {
+		if (flatSides[0] && flatSides[1]) {
 			twoSideFlat(patch, itrLeft, t, 2);
-		} else if (!flatSides[1] && !flatSides[2]) {
+		} else if (flatSides[1] && flatSides[2]) {
 			twoSideFlat(patch, itrLeft, t, 0);
 		} else {
 			twoSideFlat(patch, itrLeft, t, 1);
@@ -302,12 +306,18 @@ void Bezier::zeroSideFlat(Patch patch, int itrLeft, Ptriangle t) {
 	std::pair<float,float> center (centerX,centerY);  //center of the triangle
 
 	//Six triangle subdivisions.
-	Ptriangle t1(a,center,x);
-	Ptriangle t2(x,center,b);
-	Ptriangle t3(b,center,y);
-	Ptriangle t4(y,center,c);
-	Ptriangle t5(c,center,z);
-	Ptriangle t6(z,center,a);
+	// Ptriangle t1(a,center,x);
+	// Ptriangle t2(x,center,b);
+	// Ptriangle t3(b,center,y);
+	// Ptriangle t4(y,center,c);
+	// Ptriangle t5(c,center,z);
+	// Ptriangle t6(z,center,a);
+	Ptriangle t1(x,center,a);
+	Ptriangle t2(b,center,x);
+	Ptriangle t3(y,center,b);
+	Ptriangle t4(c,center,y);
+	Ptriangle t5(z,center,c);
+	Ptriangle t6(a,center,z);
 
 	adaptiveSubdivide(patch, itrLeft-1, t1);
 	adaptiveSubdivide(patch, itrLeft-1, t2);
@@ -340,11 +350,16 @@ void Bezier::oneSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
 	std::pair<float,float> center (centerX,centerY);  //center of the triangle
 
 	//Five triangle subdivisions.
-	Ptriangle t1(a,center,b);
-	Ptriangle t2(b,center,x);
-	Ptriangle t3(x,center,c);
-	Ptriangle t4(c,center,y);
-	Ptriangle t5(y,center,a);
+	// Ptriangle t1(a,center,b);
+	// Ptriangle t2(b,center,x);
+	// Ptriangle t3(x,center,c);
+	// Ptriangle t4(c,center,y);
+	// Ptriangle t5(y,center,a);
+	Ptriangle t1(b,center,a);
+	Ptriangle t2(x,center,b);
+	Ptriangle t3(c,center,x);
+	Ptriangle t4(y,center,c);
+	Ptriangle t5(a,center,y);
 
 	adaptiveSubdivide(patch, itrLeft-1, t1);
 	adaptiveSubdivide(patch, itrLeft-1, t2);
@@ -358,24 +373,29 @@ void Bezier::oneSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
 void Bezier::twoSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
 	std::pair<float,float> p1 = t.getPoint(i);
 	std::pair<float,float> p2 = t.getPoint((i+1)%3);
+	std::pair<float,float> p3 = t.getPoint((i+2)%3);
 	float midU = (p1.first + p2.first) * 0.5;
 	float midV = (p1.second + p2.second) * 0.5;
 
 	std::pair<float,float> x (midU, midV); //Unflat side midpoint
-	std::pair<float,float> a = t.getPoint((i+2)%3);  //Opposing point to unflat side
-	std::pair<float,float> b = t.getPoint((i)%3);
-	std::pair<float,float> c = t.getPoint((i+1)%3); //Adjacent points to unflat side
+	std::pair<float,float> a = p1;  
+	std::pair<float,float> b = p2; 
+	std::pair<float,float> c = p3; //Opposing point to unflat side
 
 
-	float centerX = a.first + (2/3)*(a.first-x.first);
-	float centerY = a.second + (2/3)*(a.second-x.second);
+	float centerX = c.first + (2/3)*(c.first-x.first);
+	float centerY = c.second + (2/3)*(c.second-x.second);
 	std::pair<float,float> center (centerX,centerY);  //center of the triangle
 
 	//Four triangle subdivisions.
+	// Ptriangle t1(x,center,b);
+	// Ptriangle t2(a,center,x);
+	// Ptriangle t3(c,center,a);
+	// Ptriangle t4(b,center,c);
 	Ptriangle t1(b,center,x);
-	Ptriangle t2(x,center,c);
-	Ptriangle t3(c,center,a);
-	Ptriangle t4(a,center,b);
+	Ptriangle t2(x,center,a);
+	Ptriangle t3(a,center,c);
+	Ptriangle t4(c,center,b);
 
 	adaptiveSubdivide(patch, itrLeft-1, t1);
 	adaptiveSubdivide(patch, itrLeft-1, t2);
@@ -451,6 +471,10 @@ Triangle Bezier::getTriangle(int i) {
 		std::cout << "bezTriangles[" << i << "] access out of bounds. Max: " << bezTriangles.size() << "\n";
 		exit(1);
 	}
+}
+
+void Bezier::setFlatBound(float f) {
+	flatBound = f;
 }
 // //Returns a four element array of {end, mid, mid, end} of
 // //the control points of the half-curve
