@@ -9,10 +9,16 @@
 #include "point.h"
 #include "quad.h"
 
+Bezier::Bezier() {
+	std::vector<Point> bezPoints(5);
+	std::vector<Quad> bezQuads(5);
+	
+}
+
 // given the control points of a bezier curve
 // and a parametric value, return the curve 
 // point and derivative
-Point Bezier::bezcurveinterp(Point curve[], float u, Point &dPdu) {
+Point Bezier::bezcurveinterp(std::vector<Point> curve, float u, Point &dPdu) {
 	// first, split each of the three segments
 	// to form two new ones AB and BC
 	Point A = curve[0] * (1.0-u) + curve[1] * u;
@@ -36,8 +42,8 @@ Point Bezier::bezpatchinterp(Patch patch, float u, float v, Point &n) {
 	Point dPdu;
 	Point dPdv;
 	Point trash;
-	Point vcurve[4];
-	Point ucurve[4];
+	std::vector<Point> vcurve(4);
+	std::vector<Point> ucurve(4);
 
 	bool horizontal = true;
 	bool vertical = false;
@@ -58,7 +64,9 @@ Point Bezier::bezpatchinterp(Patch patch, float u, float v, Point &n) {
 	// take cross product of partials to find normal
 	n = crossP(dPdu, dPdv);
 	n = n / n.length();
-	p.saveNormal(n);
+	Point n2 = crossP(dPdv, dPdu);
+	n2 = n2 / n2.length();
+	p.saveNormal(n, n2);
 	return p;
 }
 
@@ -66,13 +74,14 @@ Point Bezier::bezpatchinterp(Patch patch, float u, float v, Point &n) {
 void Bezier::subdividepatch(Patch patch, float step) {
 	// compute how many subdivisions there 
 	// are for this step size
-	int epsilon = 0;
-	int numdiv = ((1 + epsilon)/ step);
+	float epsilon = 0;
+	float numdiv = ((1 + epsilon)/ step) + 1;
 	float u, v;
 	Point p, n;
 
 	bezPoints.clear();
-	bezPoints.resize(numdiv*numdiv);
+	bezPoints.reserve((numdiv+1)*(numdiv+1));
+	std::cout << "Numdiv: " << numdiv << "\n";
 
 	// for each parametric value of u
 	for (int iu = 0; iu < numdiv; iu++) {
@@ -86,6 +95,7 @@ void Bezier::subdividepatch(Patch patch, float step) {
 		}
 	}
 	constructQuads(numdiv);
+	//printQuad();
 }
 
 //  Returns cross product between two 3D vectors
@@ -99,26 +109,33 @@ Point Bezier::crossP(Point a, Point b) {
 	return point;
 }
 
-void Bezier::savesurfacepointandnormal(Point p) {
+void Bezier::savesurfacepointandnormal(Point &p) {
 	bezPoints.push_back(p);
 }
 
 void Bezier::constructQuads(float numdiv) {
+	bezQuads.clear();
+	bezQuads.reserve((numdiv)*(numdiv));
+	quadNum = 0;
+
 	int pos1, pos2, pos3, pos4;
-	int v = 0;
 	int position;
-	while (v < numdiv-1) {
-		int u = 0;
-		while (u < numdiv-1) {
-			pos1 = v*numdiv + u;
-			pos2 = v*numdiv + u+1;
-			pos3 = (v+1)*numdiv + u+1;
-			pos4 = (v+1)*numdiv + u;  //Points stored clockwise position
-			Quad quad(bezPoints[pos1],bezPoints[pos2],bezPoints[pos3],bezPoints[pos4]);
-			bezQuads.push_back(quad);
-			u++;
+	for (int u = 0; u < numdiv-1; u++) {
+		for (int v = 0; v < numdiv-1; v++) {
+			pos1 = u*numdiv + v;
+			pos2 = u*numdiv + v + 1; 
+			pos3 = (u+1)*numdiv + v + 1;
+			pos4 = (u+1)*numdiv + v;  //Points stored c-clockwise position
+
+			Point p1 = bezPoints[pos1]; std::cout << p1.getValues()[0] << " " << p1.getValues()[1] << " " << p1.getValues()[2] << "\n";
+			Point p2 = bezPoints[pos2]; std::cout << p2.getValues()[0] << " " << p2.getValues()[1] << " " << p2.getValues()[2] << "\n";
+			Point p3 = bezPoints[pos3]; std::cout << p3.getValues()[0] << " " << p3.getValues()[1] << " " << p3.getValues()[2] << "\n";
+			Point p4 = bezPoints[pos4]; std::cout << p4.getValues()[0] << " " << p4.getValues()[1] << " " << p4.getValues()[2] << "\n";
+
+			Quad quad(bezPoints[pos1],bezPoints[pos2],bezPoints[pos3],bezPoints[pos4]); std::cout << "ax\n";
+			bezQuads.push_back(quad); std::cout << "bx\n";
+			quadNum++; std::cout << "cx\n";	
 		}
-		v++;
 	}
 }
 
@@ -127,8 +144,81 @@ int Bezier::getQuadNum() {
 }
 
 Quad Bezier::getQuad(int i) {
-	return bezQuads[i];
+	std::cout << "az\n";
+	if (i < bezQuads.size()) {
+		//printQuad();
+		// Quad quad = bezQuads[i];
+		// std::cout << i << " bz\n";
+ 	// 	return quad;
+		return bezQuads[i];
+	} else {
+		std::cout << "cz\n";
+		std::cout << "bezQuads[" << i << "] access out of bounds. Max: " << bezQuads.size() << "\n";
+		exit(1);
+	}
 }
+
+void Bezier::printQuad() {
+	std::cout << "Size of bezQuads: " << bezQuads.size() << "\n";
+	for (int i = 0; i < bezQuads.size(); i++) {
+		Point* p = bezQuads[i].getPoints();
+		float* values = p[0].getValues();
+		std::cout << values[0] << " " << values[1] << " " << values [2] << "\n";
+		values = p[1].getValues();
+		std::cout << values[0] << " " << values[1] << " " << values [2] << "\n";
+		values = p[2].getValues();
+		std::cout << values[0] << " " << values[1] << " " << values [2] << "\n";
+		values = p[3].getValues();
+		std::cout << values[0] << " " << values[1] << " " << values [2] << "\n";
+		std::cout << "\n";
+	}
+}
+
+/** Adaptive Subdivision Methods **/
+
+// void Bezier::adaptiveExecute(Patch patch, float step) {
+// 	if (step >= 1) {
+// 		//render as is
+// 	} else {
+// 		//subdivide in half.  Break into triangles, call adaptiveSubdivide(), incr step
+// 		Patch one;
+// 		one.addCurve()
+// 	}
+// }
+
+// void Bezier::adaptiveSubdivide(Patch patch, float step) {
+// 	if (flatnessCheck) {
+// 		//render as flat quad
+// 	} else if (step >= 1) {
+// 		//render as is
+// 	} else {
+// 		//subdivide more and call adaptiveSubdivide(). increment step
+// 	}
+// }
+
+// void Bezier::divideToTriangle(Patch patch, Patch &one, Patch &two) {
+// 	Point A = curve[0] * (1.0-u) + curve[1] * u;
+// 	Point B = curve[1] * (1.0-u) + curve[2] * u;
+// 	Point C = curve[2] * (1.0-u) + curve[3] * u;
+// 	// now, split AB and BC to form a new segment DE
+// 	Point D = A * (1.0-u) + B * u;
+// 	Point E = B * (1.0-u) + C * u;
+// 	// finally, pick the right point on DE,
+// 	// this is the point on the curve
+// 	Point p = D * (1.0-u) + E * u;
+// 	// compute derivative also
+// 	dPdu = 3 * (E - D);
+// 	return p;
+// }
+
+// void Bezier::produceSubdivision(Patch patch, float u, float v) {
+	
+// }
+
+// bool Bezier::flatnessCheck(Patch patch) {
+
+// }
+
 
 // #include <vector>
 // #include <iostream>

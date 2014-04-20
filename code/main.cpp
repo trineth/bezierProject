@@ -33,14 +33,16 @@ static struct timeval lastTime;
 #endif
 
 #define PI 3.14159265
-float posX = 0.0f;
-float posY = 0.0f;
-float posZ = 0.0f;
-float fov = 0;
-float angle = 0;
+float posX = 80.0f;
+float posY = -384.0f;
+float posZ = -2.0f;
+float fov = 1.0f;
+float angle = 90;
 
 std::vector<Quad> rquads;
 
+bool wire = false;
+bool adaptive = false;
 
 using namespace std;
 
@@ -96,35 +98,40 @@ void initScene(int argc, char *argv[]) {
   std::vector<Patch> patches = parser.getPatches();
   float subd = parser.getSubdivision();
 
-  for (int i = 0; i < patchNum; i++) {
-    Patch patch = patches[i];
-    Bezier bez;
-    bez.subdividepatch(patch, subd);
-    int quadNum = bez.getQuadNum();
-    for (int j = 0; j < quadNum; j++) {
-      rquads.push_back(bez.getQuad(j));
+  if (!adaptive) {
+    for (int i = 0; i < patchNum; i++) {
+      Patch patch = patches[i];
+      Bezier bez;
+      bez.subdividepatch(patch, subd);
+      int quadNum = bez.getQuadNum();
+      for (int j = 0; j < quadNum; j++) {
+        Quad quad = bez.getQuad(j);
+        rquads.push_back(quad);
+      }
     }
   }
 }
 
+void renderVertex(Point points[], int i) {
+    float* values = points[i].getValues();
+    float* normal = points[i].getNormal(posX,posY,posZ);
+    glNormal3f(normal[0], normal[1], normal[2]);
+    glVertex3f(values[0], values[1], values[2]);
+}
+
 void renderQuadAsTriangles(Point points[]) {
-    float* values;
+    // float* values;
+    // float* normal;
     glBegin(GL_TRIANGLES);
-    values = points[0].getValues();
-    glVertex3f(values[0], values[1], values[2]);
-    values = points[1].getValues();
-    glVertex3f(values[0], values[1], values[2]);
-    values = points[2].getValues();
-    glVertex3f(values[0], values[1], values[2]);
+    renderVertex(points, 0);
+    renderVertex(points, 2);
+    renderVertex(points, 1);
     glEnd();
 
     glBegin(GL_TRIANGLES);
-    values = points[2].getValues();
-    glVertex3f(values[0], values[1], values[2]);
-    values = points[3].getValues();
-    glVertex3f(values[0], values[1], values[2]);
-    values = points[0].getValues();
-    glVertex3f(values[0], values[1], values[2]);
+    renderVertex(points, 0);
+    renderVertex(points, 3);
+    renderVertex(points, 2);
     glEnd();
 }
 
@@ -133,17 +140,34 @@ void renderQuadAsTriangles(Point points[]) {
 //***************************************************
 void myDisplay() {
 
-  glClear(GL_COLOR_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  if (wire) {
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+  } else {
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+  }
+
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(fov, 1.0, 0.1, 100.0);
+  gluPerspective(fov, 1.0, 0.1, 800.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(posX, posY, posZ, 0, 0, 0, 0, 1, 0);
   glRotatef(angle, 0, 1, 0);
   glColor3f(0.5f, 0.5f, 0.5f);
+
+  // Enable lighting
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  GLfloat lightpos[] = {10, 10, 10, 0.};
+  glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+
+  glPointSize(3.0f);
 
   // //Rendering just the points
   // glPointSize(6.0f);
@@ -163,13 +187,16 @@ void myDisplay() {
 
 
   //uniform tesselation
-  glPointSize(3.0f);
-  for (int i = 0; i < rquads.size(); i++) {
-    renderQuadAsTriangles(rquads[i].getPoints());
+  if (!adaptive) {
+    for (int i = 0; i < rquads.size(); i++) {
+      renderQuadAsTriangles(rquads[i].getPoints());
+    }
   }
 
   glFlush();
   glutSwapBuffers();
+  std::cout << "Pos X, Y, Z:" << posX << " " << posY << " " << posZ << "\n";
+  std::cout << "fov, angle:" << fov << " " << angle << " " << "\n";
 }
 //****************************************************
 // called by glut when there are no messages to handle
@@ -182,16 +209,27 @@ void myFrameMove() {
   glutPostRedisplay(); // forces glut to call the display function (myDisplay())
 }
 
+void processKeys(unsigned char key, int x, int y) {
+  switch(key) {
+    case 115: // s
+      wire = !wire; break;
+    case 43: // +
+      angle += 1.0f; break;
+    case 45: // -
+      angle -= 1.0f; break;
+  }
+}
+
 void processSpecialKeys(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP :
-      posY += 0.01f; break;
+      posY += 1.0f; break;
     case GLUT_KEY_DOWN :
-      posY -= 0.01f; break;
+      posY -= 1.0f; break;
     case GLUT_KEY_LEFT :
-      posX -= 0.01f; break;
+      posX -= 1.0f; break;
     case GLUT_KEY_RIGHT :
-      posX += 0.01f; break;
+      posX += 1.0f; break;
     case GLUT_KEY_PAGE_UP :
       posZ += 1.0f; break;
     case GLUT_KEY_PAGE_DOWN :
@@ -215,7 +253,7 @@ int main(int argc, char *argv[]) {
   glutInit(&argc, argv);
 
   //This tells glut to use a double-buffered window with red, green, and blue channels 
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
   // Initalize theviewport size
   viewport.w = 800;
@@ -228,10 +266,12 @@ int main(int argc, char *argv[]) {
 
   initScene(argc, argv);                                 // quick function to set up scene
 
+
   glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
   glutReshapeFunc(myReshape);                  // function to run when the window gets resized
   glutIdleFunc(myFrameMove);                   // function to run when not handling any other task
-  glutSpecialFunc(processSpecialKeys);         // moves the car upon arrow key press
+  glutKeyboardFunc(processKeys);
+  glutSpecialFunc(processSpecialKeys);         
   glutMainLoop();                              // infinite loop that will keep drawing and resizing and whatever else
 
   return 0;

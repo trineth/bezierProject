@@ -40,8 +40,8 @@
 		return patchPoints;
 	}
 
-	Point* Patch::getCurve(int curveNum, bool isHorizontal) {
-		Point curve[4];
+	std::vector<Point> Patch::getCurve(int curveNum, bool isHorizontal) {
+		std::vector<Point> curve(4);
 		if (isHorizontal) {
 			curve[0] = patchPoints[curveNum*4];
 			curve[1] = patchPoints[curveNum*4+1];

@@ -4,14 +4,16 @@
 class Point {
 	float values[3];
 	float normal[3];
+	float normal2[3];
 public:
 	Point() {}
 	Point(float xx, float yy, float zz);
 
 	Point(float point[]);
+	Point( const Point& other );
 
-	void saveNormal(Point n);
-	float* getNormal();
+	void saveNormal(Point n, Point n2);
+	float* getNormal(float x, float y, float z);
 	float* getValues();
 	float length();
 
