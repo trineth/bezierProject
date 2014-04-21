@@ -34,12 +34,17 @@ static struct timeval lastTime;
 #endif
 
 #define PI 3.14159265
-float posX = 80.0f;
-float posY = -384.0f;
-float posZ = -2.0f;
-float fov = 1.0f;
+float tX = 80.0f;
+float tY = -384.0f;
+float tZ = -2.0f;
+float fov = -23.5f;
 float angle = 90;
+float rotx = 239;
+float roty = -153.00f;
 float flatBound = 0.05;
+float posX = 0.0f;
+float posY = 0.0f;
+float posZ = 0.0f;
 
 std::vector<Quad> rquads;
 std::vector<Triangle> rtriangles;
@@ -139,7 +144,7 @@ void initScene(int argc, char *argv[]) {
 
 void renderVertex(Point points[], int i) {
     float* values = points[i].getValues();
-    float* normal = points[i].getNormal(posX,posY,posZ);
+    float* normal = points[i].getNormal(tX,tY,tZ);
     glNormal3f(normal[0], normal[1], normal[2]);
     glVertex3f(values[0], values[1], values[2]);
 }
@@ -196,8 +201,12 @@ void myDisplay() {
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(posX, posY, posZ, 0, 0, 0, 0, 1, 0);
-  glRotatef(angle, 0, 1, 0);
+  //gluLookAt(tX, tY, tZ, 0, 0, 0, 0, 1, 0);
+  // glRotatef(angle, 0, 1, 0);
+  glTranslatef(0,0,fov);
+  glTranslatef(posX,posY,1);
+  glRotatef(rotx,1,0,0);
+  glRotatef(roty,0,1,0);  
   glColor3f(0.7f, 0.9f, 0.9f);
 
   // Enable lighting
@@ -238,8 +247,6 @@ void myDisplay() {
 
   glFlush();
   glutSwapBuffers();
-  //std::cout << "Pos X, Y, Z:" << posX << " " << posY << " " << posZ << "\n";
-  //std::cout << "fov, angle:" << fov << " " << angle << " " << "\n";
 }
 //****************************************************
 // called by glut when there are no messages to handle
@@ -259,26 +266,50 @@ void processKeys(unsigned char key, int x, int y) {
     case 115: // s
       flat = !flat; break;
     case 43: // +
-      angle += 1.0f; break;
+      fov += 0.5f; break;
     case 45: // -
-      angle -= 1.0f; break;
+      fov -= 0.5f; break;
+    case 61: // =
+      fov += 0.5f; break;
   }
 }
 
 void processSpecialKeys(int key, int x, int y) {
+  int mod = glutGetModifiers();
   switch(key) {
     case GLUT_KEY_UP :
-      posY += 1.0f; break;
+      if (mod == GLUT_ACTIVE_SHIFT) {
+        posY -= 0.5f;
+      } else {
+        rotx += 1.0f;
+      }
+      break;
     case GLUT_KEY_DOWN :
-      posY -= 1.0f; break;
+      if (mod == GLUT_ACTIVE_SHIFT) {
+        posY += 0.5f;
+      } else {
+        rotx -= 1.0f;
+      }
+      break;
     case GLUT_KEY_LEFT :
-      posX -= 1.0f; break;
+      if (mod == GLUT_ACTIVE_SHIFT) {
+        posX += 0.5f;
+      } else {
+        roty -= 1.0f;
+      }
+      break;
     case GLUT_KEY_RIGHT :
-      posX += 1.0f; break;
+      if (mod == GLUT_ACTIVE_SHIFT) {
+        posX -= 0.5f;
+      } else {
+        roty += 1.0f;
+      }
+      break;
+
     case GLUT_KEY_PAGE_UP :
-      posZ += 1.0f; break;
+      tZ += 1.0f; break;
     case GLUT_KEY_PAGE_DOWN :
-      posZ -= 1.0f; break;
+      tZ -= 1.0f; break;
     case GLUT_KEY_F11 :
       fov += 1.0f; break;
     case GLUT_KEY_F12 :
