@@ -95,7 +95,7 @@ void Bezier::subdividepatch(Patch patch, float step) {
 	// compute how many subdivisions there 
 	// are for this step size
 	float epsilon = 0;
-	float numdiv = ((1 + epsilon)/ step) + 1;
+	int numdiv = ((1 + epsilon)/ step) + 1;
 	float u, v;
 	Point p, n;
 
@@ -183,51 +183,60 @@ void Bezier::printQuad() {
 // Sets up the adaptive tessellation process, recursively
 // calling adaptiveSubdivide if the patch is not flat.
 void Bezier::adaptiveExecute(Patch patch, float step) {
-	Ptriangle triangle1;
-	triangle1.addPoint(0,0);
-	triangle1.addPoint(0,1);
-	triangle1.addPoint(1,1);
-	Ptriangle triangle2;
-	triangle2.addPoint(0,0);
-	triangle2.addPoint(1,1);
-	triangle2.addPoint(1,0);
+	// Ptriangle triangle1;
+	// triangle1.addPoint(0,0);
+	// triangle1.addPoint(0,1);
+	// triangle1.addPoint(1,1);
+	// Ptriangle triangle2;
+	// triangle2.addPoint(0,0);
+	// triangle2.addPoint(1,1);
+	// triangle2.addPoint(1,0);
+	Ptriangle triangle1(0,1, 0.5,1, 0,0.5);
+	Ptriangle triangle2(0,0.5, 0.5,1, 0.5,0.5);
+	Ptriangle triangle3(0.5,0.5, 0.5,1, 1,1);
+	Ptriangle triangle4(0.5,0.5, 1,1, 1,0.5);
+
+	Ptriangle triangle5(0,0, 0,0.5, 0.5,0.5);
+	Ptriangle triangle6(0,0, 0.5,0.5, 0.5,0);
+	Ptriangle triangle7(0.5,0, 0.5,0.5, 1,0.5);
+	Ptriangle triangle8(0.5,0, 1,0.5, 1,0);
 	bezTriangles.clear();
 	triangleNum = 0;
-	// if (step >= 1) {
-	// 	//std::cout << "adapExec a\n";
-	// 	//render as is:
-	// 	//split into two triangles, add them to triangle list
-	// 	bezTriangles.reserve(2);
-	// 	constructTriangle(patch, triangle1);
-	// 	constructTriangle(patch, triangle2);
-	// } else
-	if (isFlat(patch)) {
-		//std::cout << "adapExec b\n";
-		//render as flat
-		/* code */
-		//split into two triangles, add them to triangle list
+	if (step >= 1 || isFlat(patch)) {
 		bezTriangles.reserve(2);
 		constructTriangle(patch, triangle1);
 		constructTriangle(patch, triangle2);
+		constructTriangle(patch, triangle3);
+		constructTriangle(patch, triangle4);
+		constructTriangle(patch, triangle5);
+		constructTriangle(patch, triangle6);
+		constructTriangle(patch, triangle7);
+		constructTriangle(patch, triangle8);
 	} else {
 		//std::cout << "adapExec c\n";
 		//subdivide in half.  Break into triangles, call adaptiveSubdivide(), incr step
 		//Triangle 1 has points at (u,v): (0,0) (1,1) (1,0)
 		//Triangle 2 has points at (u,v): (0,0) (0,1) (1,1)
-		int iterationsLeft = (1 / step) - 1;
-		bezTriangles.reserve(pow(6,iterationsLeft));
-		adaptiveSubdivide(patch, iterationsLeft, triangle1);
-		adaptiveSubdivide(patch, iterationsLeft, triangle2);
+		int count = 1/step - 1;
+		bezTriangles.reserve(pow(6,4));
+		adaptiveSubdivide(patch, triangle1, count);
+		adaptiveSubdivide(patch, triangle2, count);
+		adaptiveSubdivide(patch, triangle3, count);
+		adaptiveSubdivide(patch, triangle4, count);
+		adaptiveSubdivide(patch, triangle5, count);
+		adaptiveSubdivide(patch, triangle6, count);
+		adaptiveSubdivide(patch, triangle7, count);
+		adaptiveSubdivide(patch, triangle8, count);
 	}
 }
 
 // Evaluates t at its endpoints, subdivides if necessary according to info from patch.
-void Bezier::adaptiveSubdivide(Patch patch, int itrLeft, Ptriangle t) {
-	// if (itrLeft == 0) {
-	// 	//render as is
-	// 	constructTriangle(patch, t);
-	// 	return;
-	// }
+void Bezier::adaptiveSubdivide(Patch patch, Ptriangle t, int count) {
+	if (count == 0) {
+		//render as is
+		constructTriangle(patch, t);
+		return;
+	}
 
 	bool flatSides[3] = {false, false, false}; //true if flat, false if not.
 	int numFlat = 0; 
@@ -241,23 +250,23 @@ void Bezier::adaptiveSubdivide(Patch patch, int itrLeft, Ptriangle t) {
 		}
 	}
 	if (numFlat == 0) {
-		zeroSideFlat(patch, itrLeft, t);
+		zeroSideFlat(patch, t, count);
 	} else if (numFlat == 1) {
 
 		for (int i = 0; i < 3; i++) {
 			if (flatSides[i]) {
-				oneSideFlat(patch, itrLeft, t, i);
+				oneSideFlat(patch, t, i, count);
 			}
 		}
 
 	} else if (numFlat == 2) {
 
 		if (flatSides[0] && flatSides[1]) {
-			twoSideFlat(patch, itrLeft, t, 2);
+			twoSideFlat(patch, t, 2, count);
 		} else if (flatSides[1] && flatSides[2]) {
-			twoSideFlat(patch, itrLeft, t, 0);
+			twoSideFlat(patch, t, 0, count);
 		} else {
-			twoSideFlat(patch, itrLeft, t, 1);
+			twoSideFlat(patch, t, 1, count);
 		}
 
 	} else {
@@ -283,7 +292,7 @@ void Bezier::constructTriangle(Patch patch, Ptriangle t) {
 }
 
 //Handles the case where no sides of the triangle are flat.
-void Bezier::zeroSideFlat(Patch patch, int itrLeft, Ptriangle t) {
+void Bezier::zeroSideFlat(Patch patch, Ptriangle t, int count) {
 	std::pair<float,float> p1 = t.getPoint(0);
 	std::pair<float,float> p2 = t.getPoint(1);
 	std::pair<float,float> p3 = t.getPoint(2);
@@ -319,17 +328,17 @@ void Bezier::zeroSideFlat(Patch patch, int itrLeft, Ptriangle t) {
 	Ptriangle t5(z,center,c);
 	Ptriangle t6(a,center,z);
 
-	adaptiveSubdivide(patch, itrLeft-1, t1);
-	adaptiveSubdivide(patch, itrLeft-1, t2);
-	adaptiveSubdivide(patch, itrLeft-1, t3);
-	adaptiveSubdivide(patch, itrLeft-1, t4);
-	adaptiveSubdivide(patch, itrLeft-1, t5);
-	adaptiveSubdivide(patch, itrLeft-1, t6);
+	adaptiveSubdivide(patch, t1, count -1);
+	adaptiveSubdivide(patch, t2, count -1);
+	adaptiveSubdivide(patch, t3, count -1);
+	adaptiveSubdivide(patch, t4, count -1);
+	adaptiveSubdivide(patch, t5, count -1);
+	adaptiveSubdivide(patch, t6, count -1);
 }
 
 // Handles the case where one side of the triangle is flat.
 //i is the indicator of the one flat side. ie p1-p2 is flat
-void Bezier::oneSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
+void Bezier::oneSideFlat(Patch patch, Ptriangle t, int i, int count) {
 	std::pair<float,float> p1 = t.getPoint(i);
 	std::pair<float,float> p2 = t.getPoint((i+1)%3);
 	std::pair<float,float> p3 = t.getPoint((i+2)%3);
@@ -361,16 +370,18 @@ void Bezier::oneSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
 	Ptriangle t4(y,center,c);
 	Ptriangle t5(a,center,y);
 
-	adaptiveSubdivide(patch, itrLeft-1, t1);
-	adaptiveSubdivide(patch, itrLeft-1, t2);
-	adaptiveSubdivide(patch, itrLeft-1, t3);
-	adaptiveSubdivide(patch, itrLeft-1, t4);
-	adaptiveSubdivide(patch, itrLeft-1, t5);
+	constructTriangle(patch, t1);
+	//adaptiveSubdivide(patch, t1, count-1);
+
+	adaptiveSubdivide(patch, t2, count-1);
+	adaptiveSubdivide(patch, t3, count-1);
+	adaptiveSubdivide(patch, t4, count-1);
+	adaptiveSubdivide(patch, t5, count-1);
 }
 
 //Handles the case where two sides of the triangle are flat.
 // i is the indicatos the side not flat.
-void Bezier::twoSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
+void Bezier::twoSideFlat(Patch patch, Ptriangle t, int i, int count) {
 	std::pair<float,float> p1 = t.getPoint(i);
 	std::pair<float,float> p2 = t.getPoint((i+1)%3);
 	std::pair<float,float> p3 = t.getPoint((i+2)%3);
@@ -397,12 +408,13 @@ void Bezier::twoSideFlat(Patch patch, int itrLeft, Ptriangle t, int i) {
 	Ptriangle t3(a,center,c);
 	Ptriangle t4(c,center,b);
 
-	adaptiveSubdivide(patch, itrLeft-1, t1);
-	adaptiveSubdivide(patch, itrLeft-1, t2);
-	adaptiveSubdivide(patch, itrLeft-1, t3);
-	adaptiveSubdivide(patch, itrLeft-1, t4);
+	adaptiveSubdivide(patch, t1, count -1);
+	adaptiveSubdivide(patch, t2, count -1);
+	// adaptiveSubdivide(patch, t3, count -1);
+	// adaptiveSubdivide(patch, t4, count -1);
+	constructTriangle(patch, t3);
+	constructTriangle(patch, t4);
 }
-
 //Checks for whether the given triangle is beneath the flatBound
 bool Bezier::isFlat(Patch patch, Ptriangle t, int side) {
 	Point trash;

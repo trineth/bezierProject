@@ -102,6 +102,10 @@ void initScene(int argc, char *argv[]) {
   std::vector<Patch> patches = parser.getPatches();
   float subd = parser.getSubdivision();
 
+  if (subd <= 0) {
+    std::cout << "Error: The subdivision parameter must be greater than 0\n";
+    exit(1);
+  }
 
   if (parser.isAdaptive()) {
     adaptive = true;
@@ -122,7 +126,7 @@ void initScene(int argc, char *argv[]) {
     for (int i = 0; i < patchNum; i++) {
       Patch patch = patches[i];
       Bezier bez;
-      bez.setFlatBound(flatBound);
+      bez.setFlatBound(subd);
       bez.adaptiveExecute(patch, subd);
       int triangleNum = bez.getTriangleNum();
       for (int j = 0; j < triangleNum; j++) {
@@ -194,7 +198,7 @@ void myDisplay() {
   glLoadIdentity();
   gluLookAt(posX, posY, posZ, 0, 0, 0, 0, 1, 0);
   glRotatef(angle, 0, 1, 0);
-  glColor3f(0.5f, 0.5f, 0.5f);
+  glColor3f(0.7f, 0.9f, 0.9f);
 
   // Enable lighting
   glEnable(GL_LIGHTING);
@@ -230,7 +234,6 @@ void myDisplay() {
     for (int i = 0; i < rtriangles.size(); i++) {
       renderTriangle(rtriangles[i].getPoints());
     }
-    std::cout << "rendering\n";
   }
 
   glFlush();

@@ -14,6 +14,16 @@
 		pointsStored = 0;
 	}
 
+	Ptriangle::Ptriangle(float x0, float y0, float x1, float y1, float x2, float y2) {
+		pointsStored = 3;
+		std::pair<float,float> p(x0,y0);
+		std::pair<float,float> p1(x1,y1);
+		std::pair<float,float> p2(x2,y2);
+		points[0] = p;
+		points[1] = p1;
+		points[2] = p2;
+	}
+
 	Ptriangle::Ptriangle(std::pair<float,float> a, std::pair<float,float> b,
 		std::pair<float,float> c) {
 		pointsStored = 3;

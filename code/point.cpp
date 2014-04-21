@@ -56,7 +56,7 @@
 		// } else {
 		// 	return normal2;
 		// }
-		return normal;
+		return normal2;
 	}
 
 	float* Point::getValues() {

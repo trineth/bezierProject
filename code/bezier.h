@@ -37,11 +37,11 @@ public:
 // Adaptive Subdivision Methods
 //******************************************************************
 	void adaptiveExecute(Patch patch, float step);
-	void adaptiveSubdivide(Patch patch, int itrLeft, Ptriangle t);
+	void adaptiveSubdivide(Patch patch, Ptriangle t, int count);
 	void constructTriangle(Patch patch, Ptriangle t);
-	void zeroSideFlat(Patch patch, int itrLeft, Ptriangle t);
-	void oneSideFlat(Patch patch, int itrLeft, Ptriangle t, int i);
-	void twoSideFlat(Patch patch, int itrLeft, Ptriangle t, int i);
+	void zeroSideFlat(Patch patch, Ptriangle t, int count);
+	void oneSideFlat(Patch patch, Ptriangle t, int i, int count);
+	void twoSideFlat(Patch patch, Ptriangle t, int i, int count);
 	bool isFlat(Patch patch, Ptriangle t, int side);
 	bool isFlat(Patch patch);
 	Point findMidpoint(std::vector<Point> quad);
