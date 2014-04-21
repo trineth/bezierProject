@@ -207,7 +207,7 @@ void myDisplay() {
   glTranslatef(posX,posY,1);
   glRotatef(rotx,1,0,0);
   glRotatef(roty,0,1,0);  
-  glColor3f(0.7f, 0.9f, 0.9f);
+  glColor3f(0.2f, 0.9f, 0.7f);
 
   // Enable lighting
   glEnable(GL_LIGHTING);
