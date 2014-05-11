@@ -1,0 +1,69 @@
+Assignment 3:  Bezier Curves
+
+Name:  Steven Wu
+SID: 22930668
+Platform:  Linux
+
+===================================
+===================================
+
+Usage Instructions:
+./main [bez file location] [subdivision parameter] [-a]
+1. Reads in a .bez file, with the first element indicating the number of patches, followed by blocks of 16 xyz points describing each patch.  There must be an empty line separating each block, and an (empty) line at the end of the file.
+2. The subdivision paramater indicates how many subdivisions the process will perform, given as a value greater than 0 and less than 1.
+3. "-a" turns adaptive tessellation on.  By default, ./main will use uniform tessellation.
+
+Camera Control:
+Hit s to switch between flat and smooth shading.
+Hit w to switch between normal and wireframe rendering.
+Zoom in and out using -/+, respectively.
+The arrow keys will rotate the object.
+Holding shift while pressing the arrow keys will translate the object.
+
+===================================
+===================================
+
+Example Images:
+image-00.png: ./main bez/teapot.bez 0.5
+Demonstrates the basic rendering of teapot.bez, at subdivision step 0.5, using
+uniform tessellation.
+
+image-01.png: ./main bez/test.bez 0.5
+Demonstrates the basic rendering of test.bez, at subdivsion step 0.5, using
+uniform tessellation.
+
+image-02.png: ./main bez/teapot.bez 0.5
+From image-00, demonstrates rotation, translation and zooming capabilities of my assignment.
+
+image-03.png: ./main bez/teapot.bez 0.5
+Demonstrates flat shading on the teapot, in contrast to the smooth shading of prior images.
+
+image-04.png: ./main bez/teapot.bez 0.5
+Demonstrates the wireframe viewing of the teapot.
+
+image-05.png: ./main bez/teapot.bez 0.01
+Picture of the teapot taken with a higher step count, producing a smoother teapot.
+
+image-06.png: ./main bez/teapot.bez 0.01
+The same as the preious teapot, but translated and rotated for good measure.
+
+image-07.png: ./main bez/teapot.bez 0.05
+Flat shading at a higher subdivision.
+
+image-08.png: ./main bez/teapot.bez 0.05
+Wireframe rendering at a higher subdivision.
+
+image-09.png: ./main bez/teapot.bez 0.5 -a
+Rendering of the first image using adaptive tessellation.
+
+image-10a.png image-10b.png: ./main bez/teapot.bez 0.05 -a
+Wireframe and flat shading rendering of adaptive tessellation.  The drawn polgyons vary in size and shape depending on the curvature of the surface.
+
+image-11a/b/c.png: ./main bez/pokemon.bez 0.1
+Custom image.  Would you believe me if I said it was a pokemon.
+
+image-12a/b/c.png: ./main bez/blastoise.bez 0.1
+Custom image.  Somewhat resembles a bird.
+
+image-13/b/c.png: ./main bez/test.bez 0.1 [-a]
+Demonstrates the test arch in wireform, then the respective adaptive tessellation renderings.
