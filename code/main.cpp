@@ -1,4 +1,3 @@
-// CS184 Simple OpenGL Example
 #include <vector>
 #include <iostream>
 #include <fstream>
